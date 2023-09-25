@@ -5,6 +5,7 @@ import { useRef } from "react";
 import axios from "axios";
 import { ScaleLoader } from "react-spinners";
 import Timer from "./Timer";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   // Properties
@@ -15,8 +16,12 @@ function Home() {
   const timerChildRef = useRef(null);
   const [myQuestions, setMyQuestions] = useState();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   
   useEffect(() => {
+    if(localStorage.getItem("user")==null){
+        navigate("/login");
+      }
     async function getQuestions() {
       timerChildRef.current.startHandler();
       setLoading(true);

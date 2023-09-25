@@ -5,30 +5,34 @@ import axios from "axios";
 
 function Login() {
   const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const url = "http://localhost:5000/api/emails";
-    const userData = {
-      address: email,
-    };
-    try {
-      const response = await axios.post(url, userData);
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
+    
+    axios.post('http://localhost:5000/api/emails', {
+        address:email
+      })
+      .then(function (response) {
+        console.log(response);
+        localStorage.setItem("user",email);
+        navigate("/");
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
 
+    console.log(`Email submitted: ${email}`);
     setEmail(""); // Clear the input field after submission
   };
 
   return (
     <div className="email-form-container">
-      <h1 className="headers">CAUSAL FUNNEL QUIZ APP</h1>
+        <h1 className="headers">CAUSAL FUNNEL QUIZ APP</h1>
       <h1>Email Submission</h1>
       <form className="forms" onSubmit={handleSubmit}>
         <div className="data">
@@ -44,7 +48,7 @@ function Login() {
             />
           </div>
           <div>
-            <button type="submit">Submit</button>
+            <button className="btn" type="submit">Submit</button>
           </div>
         </div>
       </form>

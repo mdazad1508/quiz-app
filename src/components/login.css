@@ -50,7 +50,7 @@ input[type="email"] {
   margin-right: 20px;
 }
 
-button {
+.btn {
   padding: 10px 20px;
   background-color: #007bff;
   color: #fff;
@@ -60,7 +60,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+.btn:hover {
   background-color: #0056b3;
   color:white;
 }
