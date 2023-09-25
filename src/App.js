@@ -4,6 +4,7 @@ import VerticalNavigation from "./components/Navigation";
 import { useRef } from "react";
 import axios from "axios";
 import { ScaleLoader } from "react-spinners";
+import Timer from "./components/Timer";
 
 function App() {
   // Properties
@@ -11,11 +12,13 @@ function App() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const childRef = useRef(null);
+  const timerChildRef = useRef(null);
   const [myQuestions, setMyQuestions] = useState();
   const [loading, setLoading] = useState(false);
-
+  
   useEffect(() => {
     async function getQuestions() {
+      timerChildRef.current.startHandler();
       setLoading(true);
       try {
         const response = await axios.get(
@@ -29,7 +32,7 @@ function App() {
 
           // Create an array of options
           let options=[];
-          if(incorrect_answers.length==3){
+          if(incorrect_answers.length===3){
             options = [
               { id: 0, text: correct_answer, isCorrect: true },
               { id: 1, text: incorrect_answers[0], isCorrect: false },
@@ -82,6 +85,7 @@ function App() {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setShowResults(true);
+      timerChildRef.current.stopHandler();
     }
   };
 
@@ -90,6 +94,8 @@ function App() {
     setScore(0);
     setCurrentQuestion(0);
     setShowResults(false);
+    timerChildRef.current.resetHandler();
+    timerChildRef.current.startHandler();
   };
 
   useEffect(() => {
@@ -100,10 +106,20 @@ function App() {
     handleClick();
   }, [currentQuestion]);
 
+  const submitHandler=()=>{
+    setShowResults(true);
+    timerChildRef.current.stopHandler();
+  }
+
   return (
     <div className="App">
-      {/* 1. Header  */}
+      
+      <div className="mainheader">
+      <Timer subFun = {submitHandler} ref={timerChildRef} />
       <h1 className="header">CAUSAL FUNNEL QUIZ APP</h1>
+      <button className="sbtn" onClick={submitHandler}>Submit </button>
+      </div>
+     
       {loading ? (
          <div>
           <ScaleLoader  color="#fff" height={60}/>
