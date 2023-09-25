@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import VerticalNavigation from "./components/Navigation";
 import { useRef } from "react";
+import axios from "axios";
+import { ScaleLoader } from "react-spinners";
 
 function App() {
   // Properties
@@ -9,56 +11,65 @@ function App() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const childRef = useRef(null);
+  const [myQuestions, setMyQuestions] = useState();
+  const [loading, setLoading] = useState(false);
 
-  const questions = [
-    {
-      text: "What is the capital of America?",
-      options: [
-        { id: 0, text: "New York City", isCorrect: false },
-        { id: 1, text: "Boston", isCorrect: false },
-        { id: 2, text: "Santa Fe", isCorrect: false },
-        { id: 3, text: "Washington DC", isCorrect: true },
-      ],
-    },
-    {
-      text: "What year was the Constitution of America written?",
-      options: [
-        { id: 0, text: "1787", isCorrect: true },
-        { id: 1, text: "1776", isCorrect: false },
-        { id: 2, text: "1774", isCorrect: false },
-        { id: 3, text: "1826", isCorrect: false },
-      ],
-    },
-    {
-      text: "Who was the second president of the US?",
-      options: [
-        { id: 0, text: "John Adams", isCorrect: true },
-        { id: 1, text: "Paul Revere", isCorrect: false },
-        { id: 2, text: "Thomas Jefferson", isCorrect: false },
-        { id: 3, text: "Benjamin Franklin", isCorrect: false },
-      ],
-    },
-    {
-      text: "What is the largest state in the US?",
-      options: [
-        { id: 0, text: "California", isCorrect: false },
-        { id: 1, text: "Alaska", isCorrect: true },
-        { id: 2, text: "Texas", isCorrect: false },
-        { id: 3, text: "Montana", isCorrect: false },
-      ],
-    },
-    {
-      text: "Which of the following countries DO NOT border the US?",
-      options: [
-        { id: 0, text: "Canada", isCorrect: false },
-        { id: 1, text: "Russia", isCorrect: true },
-        { id: 2, text: "Cuba", isCorrect: true },
-        { id: 3, text: "Mexico", isCorrect: false },
-      ],
-    },
-  ];
+  useEffect(() => {
+    async function getQuestions() {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          "https://opentdb.com/api.php?amount=15"
+        );
+        console.log(response);
+        const results = response.data.results;
 
-  // Helper Functions
+        const questions = results?.map((result) => {
+          const { question, correct_answer, incorrect_answers } = result;
+
+          // Create an array of options
+          let options=[];
+          if(incorrect_answers.length==3){
+            options = [
+              { id: 0, text: correct_answer, isCorrect: true },
+              { id: 1, text: incorrect_answers[0], isCorrect: false },
+              { id: 2, text: incorrect_answers[1], isCorrect: false },
+              { id: 3, text: incorrect_answers[2], isCorrect: false },
+            ];
+          }else{
+            options = [
+              { id: 0, text: correct_answer, isCorrect: true },
+              { id: 1, text: incorrect_answers[0], isCorrect: false }
+            ]
+          }
+
+
+          // Shuffle the options to randomize their order
+          shuffleArray(options);
+
+          return {
+            text: question,
+            options,
+          };
+        });
+        console.log(questions);
+
+        // Function to shuffle an array randomly
+        function shuffleArray(array) {
+          for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+        }
+
+        setMyQuestions(questions);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    getQuestions();
+  }, []);
 
   /* A possible answer was clicked */
   const optionClicked = (isCorrect) => {
@@ -67,7 +78,7 @@ function App() {
       setScore(score + 1);
     }
 
-    if (currentQuestion + 1 < questions.length) {
+    if (currentQuestion + 1 < myQuestions.length) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setShowResults(true);
@@ -93,50 +104,61 @@ function App() {
     <div className="App">
       {/* 1. Header  */}
       <h1 className="header">CAUSAL FUNNEL QUIZ APP</h1>
-      <div className="content">
-        {/* 3. Show results or show the question game  */}
-        {showResults ? (
-          /* 4. Final Results */
-          <div className="final-results">
-            <h1>Final Results</h1>
-            <h2>
-              {score} out of {questions.length} correct - (
-              {(score / questions.length) * 100}%)
-            </h2>
-            <button onClick={() => restartGame()}>Restart Quiz Again</button>
-          </div>
-        ) : (
-          /* 5. Question Card  */
-          <div className="question-card">
-            {/* Current Question  */}
-            <h2>
-              Question: {currentQuestion + 1} out of {questions.length}
-            </h2>
-            <h3 className="question-text">{questions[currentQuestion].text}</h3>
+      {loading ? (
+         <div>
+          <ScaleLoader  color="#fff" height={60}/>
+          <p style={{color:"white"}}>feching questions...</p>
+         </div>
+        
+      ) : (
+        <div className="content">
+          {/* 3. Show results or show the question game  */}
+          {showResults ? (
+            /* 4. Final Results */
+            <div className="final-results">
+              <h1>Final Results</h1>
+              <h2>
+                {score} out of {myQuestions.length} correct - (
+                {(score / myQuestions.length).toFixed(2) * 100}%)
+              </h2>
+              <button onClick={() => restartGame()}>Restart Quiz Again</button>
+            </div>
+          ) : (
+            /* 5. Question Card  */
+            <div className="question-card">
+              {/* Current Question  */}
+              <h2>
+                Question: {currentQuestion + 1} out of {myQuestions?.length}
+              </h2>
+              <h3 className="question-text">
+                {myQuestions && myQuestions[currentQuestion].text}
+              </h3>
 
-            {/* List of possible answers  */}
-            <ul>
-              {questions[currentQuestion].options.map((option) => {
-                return (
-                  <li
-                    key={option.id}
-                    onClick={() => optionClicked(option.isCorrect)}
-                  >
-                    {option.text}
-                  </li>
-                );
-              })}
-            </ul>
+              {/* List of possible answers  */}
+              <ul>
+                {myQuestions && myQuestions[currentQuestion]?.options.map((option) => {
+                  return (
+                    <li
+                      key={option.id}
+                      onClick={() => optionClicked(option.isCorrect)}
+                    >
+                      {option.text}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+          <div>
+            <VerticalNavigation
+              questions={myQuestions}
+              fun={setCurrentQuestion}
+              ref={childRef}
+            />
           </div>
-        )}
-        <div>
-          <VerticalNavigation
-            questions={questions}
-            fun={setCurrentQuestion}
-            ref={childRef}
-          />
         </div>
-      </div>
+      )}
+
       <h3 className="footer">developed by Md Azad</h3>
     </div>
   );

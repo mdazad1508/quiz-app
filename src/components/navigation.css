@@ -1,7 +1,7 @@
 /* CSS for VerticalNavigation.js */
 
 .vertical-navigation {
-    width: 200px;
+    min-width: 250px;
     background-color: #f0f0f0;
     padding: 10px;
     border-right: 1px solid #ccc;
@@ -9,8 +9,16 @@
     color:black;
     margin-right: 20px;
   }
+
+  .container{
+    column-count: 3; /* Set the number of columns */
+  column-gap: 20px; /* Adjust the gap between columns as needed */
+  max-width: 400px; /* Set a maximum width for the container if desired */
+  }
   
   .vertical-navigation ul {
+     /* Set the number of columns */
+   /* Adjust the gap between columns as needed */
     list-style: none;
     padding: 0;
     margin: 0;
@@ -18,9 +26,11 @@
   
   .vertical-navigation li {
     cursor: pointer;
-    padding: 10px;
+    padding: 16px;
     border-bottom: 1px solid #ccc;
     transition: background-color 0.3s ease;
+    margin-top: 0;
+    margin-bottom: 5px;
   }
   
   .vertical-navigation li:hover {
@@ -39,7 +49,7 @@
   }
   
   .question {
-    flex: 1;
+    flex:1;
     padding: 20px;
   }
   

@@ -20,7 +20,7 @@
 
   /* Dimensions  */
   width: 70%; /* Can be in percentage also. */
-  height: 30%;
+  min-height: 45%;
 
 
   /* Visual  */
